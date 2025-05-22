@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>صفخه پرداخت</title>
+	<style>
+		body{
+			font-family: Tahoma,sana-serife;
+			direction: rtl;
+			background-color:#F4F4F4;
+			padding: 1rem;
+		}
+		.checkout-form{
+			background-color: #FFFFFF;
+			padding: 20px;
+			max-width: 400px;
+			margin: auto;
+			border-radius: 10px;
+			box-shadow: 0 0 10px #ccc;
+		}
+		.checkout-form h2{
+			text-align: center;
+			margin-bottom: 20px;
+		}
+		.form-field{
+			margin-bottom: 15px;
+		}
+		.form-field lable{
+			display: block;
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+		.form-field input[type="text"],
+		.form-field input[type="tel"]{
+			width: 100%;
+			padding: 8px;
+			border-radius: 5px;
+			border: 1px solid #ccc;
+			
+		}
+		.form-field .radio-group{
+			display: flex;
+			gap:10px
+		}
+		#submit-btn{
+			width: 100;
+			background-color:#4CAF50;
+			color: white;
+			padding: 10px;
+			border: none;
+			border-radius: 7px;
+			cursor: pointer;
+			font-size: 16px;
+		}
+		.success-message{
+			margin-top: 20px;
+			text-align: center;
+			color: green;
+			font-weight: bold;
+			display: none;
+		}
+		@media(max-width:600px){
+			body{
+				padding: 0.5rem;
+			}
+			form{
+				padding: 1rem;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<form class="checkout-form" id="paymentForm">
+	<h2>پرداخت</h2>
+		<div class="form-field">
+		<label for="firstName">نام:</label>
+			<input type="text" id="firstName" required>
+		</div>
+		<div class="form-field">
+		<label for="lastName">نام خانوادگی:</label>
+			<input type="text" id="lastName" required>
+		</div>
+		<div class="form-field">
+			<label for="phone">شماره تماس</label>
+			<input type="tel" id="phone" required>
+		</div>
+		<div class="form-field">
+		<label>نوع پرداخت:</label>
+			<div class="radio-group">
+			<label><input type="radio" name="paymentType" value="offline" required>حضوری</label>
+				<label><input type="radio" name="paymentType" value="online">انلاین</label>
+				
+			</div>
+		</div>
+		<h3>خلاصه سفارش</h3>
+<ul id="order-summary"></ul>
+<p id="total-amount"></p>
+
+		<button type="submit" id="submit-btn">پرداخت</button>
+		<div class="success-message" id="successMessage">
+		پرداخت با موفقیت انجام شد(شبیه سازی شده)
+		</div>
+		
+	</form>
+	
+	<script>
+	const form = document.getElementById('paymentForm');
+const successMessage = document.getElementById('successMessage');
+
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const paymentType = form.querySelector('input[name="paymentType"]:checked');
+
+    if (firstName && lastName && phone && paymentType) {
+        if (paymentType.value === 'offline') {
+            successMessage.textContent = 'سفارش شما ثبت شد.';
+        } else if (paymentType.value === 'online') {
+            successMessage.textContent = 'پرداخت موفقیت‌آمیز بود.';
+        }
+        // ذخیره سفارش
+let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+orders.push({
+  name: `${firstName} ${lastName}`,
+  phone: phone,
+  paymentType: paymentType.value,
+  items: JSON.parse(localStorage.getItem('cartData') || '{}'),
+  date: new Date().toLocaleString()
+});
+localStorage.setItem('orders', JSON.stringify(orders));
+
+// پیام موفقیت
+successMessage.style.display = 'block';
+
+// پاک کردن فرم و سبد خرید
+form.reset();
+localStorage.removeItem('cartData');
+		// پاک کردن نمایش سبد خرید در checkout
+document.getElementById('order-summary').innerHTML = '';
+document.getElementById('total-amount').textContent = 'مبلغ قابل پرداخت: 0 تومان';
+
+		
+
+    } else {
+        alert('لطفاً تمام فیلدها را تکمیل کنید.');
+    }
+});
+		document.addEventListener('DOMContentLoaded', () => {
+    const cartData = JSON.parse(localStorage.getItem('cartData') || '{}');
+    const cartList = document.getElementById('order-summary');
+    const totalElement = document.getElementById('total-amount');
+    let total = 0;
+
+    for (const product in cartData) {
+        const item = cartData[product];
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        const li = document.createElement('li');
+        li.textContent = `${product}  کیلو: ${item.quantity} - قیمت: ${itemTotal.toLocaleString()} تومان`;
+        cartList.appendChild(li);
+    }
+
+    totalElement.textContent = `مبلغ قابل پرداخت: ${total.toLocaleString()} تومان`;
+
+    // 🔄 تغییر متن دکمه براساس نوع پرداخت
+    const paymentRadios = document.querySelectorAll('input[name="paymentType"]');
+    const submitBtn = document.getElementById('submit-btn');
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'offline' && radio.checked) {
+                submitBtn.textContent = 'ثبت سفارش';
+            } else if (radio.value === 'online' && radio.checked) {
+                submitBtn.textContent = 'پرداخت';
+            }
+        });
+    });
+});
+
+
+	</script>
+</body>
+</html>
