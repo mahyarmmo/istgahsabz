@@ -102,7 +102,9 @@
 		<div class="success-message" id="successMessage">
 		پرداخت با موفقیت انجام شد(شبیه سازی شده)
 		</div>
-		
+		<button id="backBtn" style="display: none;margin-top: 10px;width: 100%;background-color:#4CAF50;color: white;border: none;border-radius: 7px;padding: 10px;font-size: 16px;cursor: pointer;">
+		بازگشت به صفحه اصلی
+		</button>
 	</form>
 	
 	<script>
@@ -136,6 +138,16 @@ localStorage.setItem('orders', JSON.stringify(orders));
 
 // پیام موفقیت
 successMessage.style.display = 'block';
+		
+		// اضافه به کد موجود (بعد از successMessage.style.display = 'block';)
+const backBtn = document.getElementById('backBtn');
+backBtn.style.display = 'block';
+
+// وقتی کاربر روی دکمه بازگشت کلیک کنه
+backBtn.addEventListener('click', () => {
+  window.location.href = 'index.html'; // یا مسیر دلخواه دیگه
+});
+
 
 // پاک کردن فرم و سبد خرید
 form.reset();
